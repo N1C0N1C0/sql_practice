@@ -560,3 +560,108 @@ SELECT pl1.position, MAX(pl1.height) AS "最大身長",
 FROM players pl1
 GROUP BY position
 ORDER BY position;
+
+
+-- 問題68: 全選手の平均身長より低い選手をすべて抽出してください。表示する列は、背番号、ポジション、名前、身長としてください。
+
+SELECT uniform_num, position, name, height
+FROM players
+WHERE height < (SELECT AVG(height) FROM players);
+
+
+-- 問題69: 各グループの最上位と最下位を表示し、その差が50より大きいグループを抽出してください。
+
+SELECT group_name, MAX(ranking), MIN(ranking)
+FROM countries
+GROUP BY group_name
+HAVING MAX(ranking) - MIN(ranking) > 50;
+
+
+-- 問題70: 1980年生まれと、1981年生まれの選手が何人いるか調べてください。ただし、日付関数は使用せず、UNION句を使用してください。
+
+SELECT YEAR(birth) AS "誕生日", COUNT(id)
+FROM players
+GROUP BY 誕生日
+HAVING 誕生日 IN (1980, 1981)
+ORDER BY 誕生日;
+
+SELECT YEAR(birth) AS "誕生日", COUNT(id)
+FROM players
+WHERE birth BETWEEN '1980-1-1' AND '1980-12-31'
+GROUP BY 誕生日
+UNION
+SELECT YEAR(birth) AS "誕生日", COUNT(id)
+FROM players
+WHERE birth BETWEEN '1981-1-1' AND '1981-12-31'
+GROUP BY 誕生日
+ORDER BY 誕生日;
+
+
+-- 問題71: 身長が195㎝より大きいか、体重が95kgより大きい選手を抽出してください。
+--     ただし、以下の画像のように、どちらの条件にも合致する場合には2件分のデータとして抽出してください。また、結果はidの昇順としてください。
+
+SELECT id, position, name, height, weight
+FROM players
+WHERE height > 195
+UNION ALL
+SELECT id, position, name, height, weight
+FROM players
+WHERE weight > 95
+ORDER BY id;
+
+
+-- 問題72: Viewとは
+
+CREATE TABLE teachers (
+        id INT(11) NOT NULL AUTO_INCREMENT,
+        name VARCHAR(20),
+        addr VARCHAR(100), 
+        age INT(3),
+        CONSTRAINT teachers_PK PRIMARY KEY(id)
+);
+
+INSERT INTO teachers 
+(name, addr, age) 
+VALUES 
+('タロウ','東京部','29'),
+('ナオキ','埼玉部','28'),
+('ハジメ','東京部','26'),
+('テツヒコ','東京部','30'),
+('ヒロシ','神奈川部','25'),
+('ユウタ','千葉部','27'),
+('ハナカ','神奈川部','24'),
+('キヨシ','埼玉部','22');
+
+ALTER TABLE teachers CHANGE id teacher_id INT(11);
+
+ALTER TABLE teachers ADD class_id INT(11) NOT NULL;
+
+UPDATE teachers SET class_id = 3 WHERE teacher_id = 1;
+UPDATE teachers SET class_id = 1 WHERE teacher_id = 2;
+UPDATE teachers SET class_id = 2 WHERE teacher_id = 3;
+UPDATE teachers SET class_id = 4 WHERE teacher_id = 4;
+UPDATE teachers SET class_id = 5 WHERE teacher_id = 5;
+UPDATE teachers SET class_id = 1 WHERE teacher_id = 6;
+UPDATE teachers SET class_id = 3 WHERE teacher_id = 7;
+UPDATE teachers SET class_id = 2 WHERE teacher_id = 8;
+
+
+CREATE VIEW teachers_view AS 
+        SELECT teacher_id, name, class_id
+        FROM teachers;
+
+SELECT * FROM teachers_view;
+
+ALTER VIEW teachers_view AS
+        SELECT teacher_id,name,class_id,age 
+        FROM teachers;
+
+CREATE OR REPLACE VIEW teachers_view AS
+        SELECT name,addr,age 
+        FROM teachers;
+        
+CREATE OR REPLACE VIEW teachers_view AS
+        SELECT teacher_id,name,class_id
+        FROM teachers;
+	
+UPDATE teachers_view SET name = 'シュウタ' WHERE teacher_id = 1;
